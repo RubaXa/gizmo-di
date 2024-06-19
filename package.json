@@ -1,0 +1,51 @@
+{
+	"name": "gizmo-di",
+	"type": "module",
+	"version": "0.0.0",
+	"description": "Gizmo is a lightweight TypeScript DI container for flexible and maintainable dependency management in large applications.",
+	"exports": {
+		".": {
+			"import": "./dist/index.js",
+			"require": "./dist/index.cjs"
+		}
+	},
+	"main": "./dist/index.cjs",
+	"module": "./dist/index.js",
+	"types": "./dist/index.d.ts",
+	"files": [
+		"CHANGELOG.md",
+		"EXAMPLES.md",
+		"LICENSE",
+		"README.md",
+		"dist"
+	],
+	"scripts": {
+		"dev": "vite",
+		"build:ts": "tsc",
+		"lint": "tsc --noEmit && eslint . --fix",
+		"test": "vitest --watch",
+		"test:run": "vitest --run",
+		"test:coverage": "vitest --coverage",
+		"prepare": "husky",
+		"prepublishOnly": "pnpm test:run && pnpm build:ts && changelogen --release --push"
+	},
+	"devDependencies": {
+		"@antfu/eslint-config": "^2.21.1",
+		"@commitlint/cli": "^19.3.0",
+		"@commitlint/config-conventional": "^19.2.2",
+		"@types/node": "^20.14.2",
+		"@vitest/coverage-v8": "^1.6.0",
+		"camelcase": "^8.0.0",
+		"changelogen": "^0.5.5",
+		"eslint": "^9.5.0",
+		"husky": "^9.0.11",
+		"lint-staged": "^15.2.7",
+		"typescript": "^5.4.5",
+		"vite": "^5.3.1",
+		"vite-plugin-dts": "^3.9.1",
+		"vitest": "^1.6.0"
+	},
+	"lint-staged": {
+		"*.ts": "pnpm run lint"
+	}
+}
