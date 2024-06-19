@@ -1,7 +1,7 @@
 {
 	"name": "gizmo-di",
 	"type": "module",
-	"version": "0.0.1",
+	"version": "0.1.0",
 	"description": "Gizmo is a lightweight TypeScript DI container for flexible and maintainable dependency management in large applications.",
 	"exports": {
 		".": {
@@ -28,7 +28,8 @@
 		"test:run": "vitest --run",
 		"test:coverage": "vitest --coverage",
 		"prepare": "husky",
-		"prepublishOnly": "pnpm test:run && pnpm build:ts && changelogen --release --push"
+		"changelog": "changelogen",
+		"prepublishOnly": "pnpm test:run && pnpm build:ts"
 	},
 	"devDependencies": {
 		"@antfu/eslint-config": "^2.21.1",
