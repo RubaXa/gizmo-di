@@ -12,7 +12,7 @@ const projectGizmo = new Gizmo()
 // Setting up a token's value factory
 projectGizmo.set(LOGGER_TOKEN, () => ({
 	...console,
-	fatal: console,
+	fatal: console.error,
 }))
 
 // Resolve token

@@ -29,7 +29,7 @@
 		"test:coverage": "vitest --coverage",
 		"prepare": "husky",
 		"changelog": "changelogen",
-		"prepublishOnly": "pnpm test:run && pnpm build:ts"
+		"prepublishOnly": "export npm_config_registry=https://registry.npmjs.com && pnpm test:run && pnpm build:ts"
 	},
 	"devDependencies": {
 		"@antfu/eslint-config": "^2.21.1",
