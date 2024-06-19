@@ -21,6 +21,7 @@
 	],
 	"scripts": {
 		"dev": "vite",
+		"build": "pnpm build:ts",
 		"build:ts": "tsc",
 		"lint": "tsc --noEmit && eslint . --fix",
 		"test": "vitest --watch",

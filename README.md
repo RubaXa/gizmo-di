@@ -26,7 +26,7 @@ npm i --save gizmo-di
 
 ### API
 
-##### `Gizmo.token<Type>([description[, factory]])`
+#### `Gizmo.token<Type>([description[, factory]])`
 
 Creates a new Gizmo token.
 
@@ -34,8 +34,7 @@ Creates a new Gizmo token.
 - **description**: `string` — A string description for the token. (optional, but very recommended)
 - **factory**: `() => Type` — A factory function to create the token's default value.
 
-**Returns**
-- A `GizmoToken<Type>` instance.
+**Returns**: A `GizmoToken<Type>` instance.
 
 ```ts
 /** Config token with description & default */
@@ -47,15 +46,14 @@ const CONFIG_TOKEN = Gizmo.token(`Config`, () => ({
 
 ---
 
-##### `Gizmo.inject<Type>(token)`
+#### `Gizmo.inject<Type>(token)`
 
 Injects a dependency based on the active Gizmo container.
 
 **Parameters**
 - **token**: `GizmoToken<Type>` — token representing the dependency.
 
-**Returns**
-- `Type` — the resolved dependency instance.
+**Returns**: `Type` — the resolved dependency instance.
 
 ```ts
 const HTTP_CLIENT_TOKEN = Gizmo.token<HttpClient>('HttpClient')
@@ -70,7 +68,7 @@ container.set(HTTP_CLIENT_TOKEN, () => new HttpClient())
 
 ---
 
-##### `Gizmo.provide<Dep extends Function>(dep, ...args)`
+#### `Gizmo.provide<Dep>(dep, ...args)`
 
 Provides a dependency using the active Gizmo container.
 
@@ -78,11 +76,9 @@ Provides a dependency using the active Gizmo container.
 - **dep**: `Dep` — a function or class to be used as the dependency.
 - **args**: `DepTokenArgs<Dep>` — the arguments to be passed to the dependency.
 
-**Returns**
-- `() => DepType<Dep>` — a function that provides the dependency.
+**Returns**: `() => DepType<Dep>` — a function that provides the dependency.
 
-**Throws**
-- Error if the call outside of container.
+**Throws**: Error if the call outside of container.
 
 ```ts
 const LOGGER_TOKEN = Gizmo.token('Logger', Gizmo.provide(
@@ -98,7 +94,7 @@ const LOGGER_TOKEN = Gizmo.token('Logger', Gizmo.provide(
 
 ### `Gizmo` instance methods
 
-##### `set<Type>(token, factory, [options])`
+#### `set<Type>(token, factory, [options])`
 
 Set a factory for a given token and store the factory method and options.
 
@@ -108,8 +104,7 @@ Set a factory for a given token and store the factory method and options.
 - **options**: `GizmoSetOptions<Type>` (optional)
   - **mode**: `singleton | scoped | transient` (optional).
 
-**Returns**
-- `() => Type` — function to resolve the token.
+**Returns**: `() => Type` — function to resolve the token.
 
 ```ts
 // Singleton
@@ -121,15 +116,14 @@ container.set(HTTP_CLIENT, () => new HttpClient(), { mode: 'singleton' })
 
 ---
 
-##### `has(token)`
+#### `has(token)`
 
 Check if a token is present in the container.
 
 **Parameters**
 - **token**: `GizmoToken<any>` — the token to check.
 
-**Returns**
-- `boolean` — `true` if the token is present, otherwise `false`.
+**Returns**: `boolean` — `true` if the token is present, otherwise `false`.
 
 ```ts
 const exists = container.has(CONFIG_TOKEN)
@@ -137,15 +131,14 @@ const exists = container.has(CONFIG_TOKEN)
 
 ---
 
-##### `get<Type>(token)`
+#### `get<Type>(token)`
 
 Get the value associated with a token. If not cached, it resolves the value using the factory.
 
 **Parameters**
 - **token**: `GizmoToken<Type>` — the token to get the value for.
 
-**Returns**
-- `Type | undefined` — the resolved value or `undefined` if not found and no default is provided.
+**Returns**: `Type | undefined` — the resolved value or `undefined` if not found and no default is provided.
 
 ```ts
 const config = container.get(CONFIG_TOKEN)
@@ -153,18 +146,16 @@ const config = container.get(CONFIG_TOKEN)
 
 ---
 
-##### `resolve<Type>(token)`
+#### `resolve<Type>(token)`
 
 Get the value associated with a token, throws an error if not found.
 
 **Parameters**
 - **token**: `GizmoToken<Type>` — the token to resolve.
 
-**Returns**
-- `Type` — the resolved value.
+**Returns**: `Type` — the resolved value.
 
-**Throws**
-- Error if the token cannot be resolved.
+**Throws**: Error if the token cannot be resolved.
 
 ```ts
 const config = container.resolve(CONFIG_TOKEN)
@@ -172,12 +163,11 @@ const config = container.resolve(CONFIG_TOKEN)
 
 ---
 
-##### `sub()`
+#### `sub()`
 
 Creates a sub-container.
 
-**Returns**
-- `Gizmo` instance
+**Returns**: `Gizmo` instance
 
 ```ts
 const projectGizmo = globalGizmo.sub()
@@ -185,26 +175,24 @@ const projectGizmo = globalGizmo.sub()
 
 ---
 
-##### `delete<Type>(token)`
+#### `delete<Type>(token)`
 
 Remove a token and its value from the container.
 
 **Parameters**
 - **token**: GizmoToken<Type> — the token to delete.
 
-**Returns**
-- `void`
+**Returns**: `void`
 
 ```ts
 container.delete(CONFIG_TOKEN)
 ```
 
-##### `clear()`
+#### `clear()`
 
 Clear all tokens and values from the container.
 
-**Returns**
-- void
+**Returns**: `void`
 
 ```ts
 container.clear()
@@ -214,17 +202,16 @@ container.clear()
 
 ### Types / Utils
 
-#### `GizmoToken`
+### `GizmoToken`
 
-##### `map<TOut>(fn)`
+#### `map<TOut>(fn)`
 
 Transforms a token into a subordinate token for injectable (`Gizmo#provide`).
 
 **Parameters**
 - **fn**: `fn: (value: Type) => TOut` — A function that defines the transformation
 
-**Returns**
-- `GizmoTokenSub<TOut>` — Subordinate token type
+**Returns**: `GizmoTokenSub<TOut>` — Subordinate token type
 
 ```ts
 container.set(LOGGER_TOKEN, Gizmo.provide(
@@ -235,13 +222,13 @@ container.set(LOGGER_TOKEN, Gizmo.provide(
 
 ---
 
-#### `InferGizmoToken<Token>`
+### `InferGizmoToken<Token>`
 
 Utility type to infer the type from a `GizmoToken<Type>`.
 
 ---
 
-#### `GizmoTokenMode`
+### `GizmoTokenMode`
 
 Represents token modes.
 
@@ -251,7 +238,7 @@ Represents token modes.
 - `transient`
 
 ```ts
-/* eslint no-self-compare:"off"*/
+/* eslint no-self-compare:"off" */
 const randomValue = () => ({ value: Math.random() })
 const RANDOM_TOKEN = Gizmo.token<{ value: number }>('random')
 

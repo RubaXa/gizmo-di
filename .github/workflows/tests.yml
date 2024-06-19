@@ -30,4 +30,4 @@ jobs:
           version: 8
           run_install: true
       - run: pnpm build
-      - run: pnpm test
+      - run: pnpm test:run
