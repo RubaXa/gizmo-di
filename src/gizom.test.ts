@@ -12,7 +12,7 @@ beforeEach(() => {
 
 describe('token', () => {
 	it('methods', () => {
-		expect(Object.keys(TEST_TOKEN)).toEqual(['toString', 'map'])
+		expect(Object.keys(TEST_TOKEN)).toEqual(['toString', 'map', 'inject'])
 	})
 
 	it('default', () => {
@@ -215,8 +215,8 @@ describe('provide', () => {
 
 describe('inject', () => {
 	it('out of container', () => {
-		expect(() => Gizmo.inject(TEST_TOKEN)).toThrowError(
-			`[gizmo] Can't inject "TestToken" token outside of Gizmo.provide`,
+		expect(() => TEST_TOKEN.inject()).toThrowError(
+			`[gizmo] Can't inject "TestToken" token outside of Gizmo#set or Gizmo.provide`,
 		)
 	})
 
@@ -227,7 +227,7 @@ describe('inject', () => {
 
 		@Gizmo.injectable()
 		class Foo {
-			test = Gizmo.inject(TEST_TOKEN)
+			test = TEST_TOKEN.inject()
 
 			clone() {
 				return new Foo()
@@ -238,7 +238,7 @@ describe('inject', () => {
 		fooGizmo.set(TEST_TOKEN, () => (val) => +val)
 
 		it('out out container', () => {
-			expect(() => new Foo()).toThrowError(`Can't inject "unknown" token outside of Gizmo.provide`)
+			expect(() => new Foo()).toThrowError(`Can't inject "unknown" token outside of Gizmo#set or Gizmo.provide`)
 		})
 
 		it('correct', () => {
@@ -260,7 +260,7 @@ describe('inject', () => {
 
 		gizmoTest.set(RANDOM_TOKEN, () => () => Math.random() + 10)
 		sub.set(FOO_TOKEN, () => () => {
-			const random = Gizmo.inject(RANDOM_TOKEN)
+			const random = RANDOM_TOKEN.inject()
 			return random()
 		})
 

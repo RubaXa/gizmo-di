@@ -46,28 +46,6 @@ const CONFIG_TOKEN = Gizmo.token(`Config`, () => ({
 
 ---
 
-#### `Gizmo.inject<Type>(token)`
-
-Injects a dependency based on the active Gizmo container.
-
-**Parameters**
-- **token**: `GizmoToken<Type>` — token representing the dependency.
-
-**Returns**: `Type` — the resolved dependency instance.
-
-```ts
-const HTTP_CLIENT_TOKEN = Gizmo.token<HttpClient>('HttpClient')
-const HTTP_CLIENT_CONFIG_TOKEN = Gizmo.token('HttpClientConfig', () => ({ apiBaseUrl: 'http://127.0.0.1/api/v1' }))
-
-class HttpClient {
-	private config = Gizmo.inject(HTTP_CLIENT_CONFIG_TOKEN)
-}
-
-container.set(HTTP_CLIENT_TOKEN, () => new HttpClient())
-```
-
----
-
 #### `Gizmo.provide<Dep>(dep, ...args)`
 
 Provides a dependency using the active Gizmo container.
@@ -203,6 +181,25 @@ container.clear()
 ### Types / Utils
 
 ### `GizmoToken`
+
+#### `inject(): Type`
+
+Injects a dependency based on the active Gizmo container.
+
+**Returns**: `Type` — the resolved dependency instance.
+
+```ts
+const HTTP_CLIENT_TOKEN = Gizmo.token<HttpClient>('HttpClient')
+const HTTP_CLIENT_CONFIG_TOKEN = Gizmo.token('HttpClientConfig', () => ({ apiBaseUrl: 'http://127.0.0.1/api/v1' }))
+
+class HttpClient {
+	private config = HTTP_CLIENT_CONFIG_TOKEN.inject()
+}
+
+container.set(HTTP_CLIENT_TOKEN, () => new HttpClient())
+```
+
+---
 
 #### `map<TOut>(fn)`
 

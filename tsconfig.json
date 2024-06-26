@@ -2,7 +2,6 @@
 	"compilerOptions": {
 		"target": "ESNext",
 		"lib": ["ESNext", "DOM"],
-		"declaration": true,
 		"experimentalDecorators": true,
 		"rootDir": "./src",
 		"module": "ESNext",
@@ -12,6 +11,7 @@
 		"noImplicitReturns": true,
 		"noUnusedLocals": true,
 		"noUnusedParameters": true,
+		"declaration": true,
 		"outDir": "./dist",
 		"sourceMap": true,
 		"esModuleInterop": true,

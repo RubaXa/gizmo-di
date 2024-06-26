@@ -50,8 +50,8 @@ export const HTTP_CLIENT_STORAGE_TOKEN = Gizmo.token<Storage>('HttpClientStorage
  *  - caching
  */
 class HttpClient {
-	private logger = Gizmo.inject(LOGGER_TOKEN) // ← Dependency Injection
-	private storage = Gizmo.inject(HTTP_CLIENT_STORAGE_TOKEN)
+	private logger = LOGGER_TOKEN.inject() // ← Dependency Injection
+	private storage = HTTP_CLIENT_STORAGE_TOKEN.inject()
 
 	async get(url: URL) {
 		const cacheKey = url.toString()

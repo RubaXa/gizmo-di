@@ -25,6 +25,9 @@ export interface GizmoToken<Type = unknown> {
 	/** Hidden method to store the type/default */
 	[GIZMO_TOKEN_TYPE]?: () => Type
 
+	/** Inject a token relative to the active container */
+	inject: () => Type
+
 	/** Method to map the token to a subordinate for `provide` */
 	map: <TOut>(fn: (thing: Type, gizmo: Gizmo) => TOut) => GizmoTokenSub<TOut>
 
@@ -71,22 +74,21 @@ export class Gizmo {
 				[GIZMO_TOKEN_OWNER]: owner,
 				[GIZMO_TOKEN_MAP_FN]: fn as any,
 			}),
+
+			inject: () => {
+				if (!activeGizmo) {
+					throw new Error(`[gizmo] Can't inject "${owner}" token outside of Gizmo#set or Gizmo.provide`)
+				}
+
+				return activeGizmo.resolve(owner)
+			},
 		}
 
 		return owner
 	}
 
-	/** Inject a token relative to the active container */
-	static inject<Type>(token: GizmoToken<Type>): Type {
-		if (!activeGizmo) {
-			throw new Error(`[gizmo] Can't inject "${token}" token outside of Gizmo.provide`)
-		}
-
-		return activeGizmo.resolve(token)
-	}
-
 	/**
-	 * Decorator to ensure proper `Gizmo.inject` functionality inside classes.
+	 * Decorator to ensure proper `GizmoToken.inject` functionality inside classes.
 	 * IMPORTANT: This is a very fragile implementation, working only for classes created within `Gizmo.provide`
 	 */
 	static injectable() {
