@@ -2,6 +2,7 @@
 	"compilerOptions": {
 		"target": "ESNext",
 		"lib": ["ESNext", "DOM"],
+		"declaration": true,
 		"experimentalDecorators": true,
 		"rootDir": "./src",
 		"module": "ESNext",
