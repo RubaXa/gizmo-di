@@ -1,12 +1,15 @@
 {
 	"name": "gizmo-di",
 	"type": "module",
-	"version": "0.2.1",
+	"version": "0.2.2",
 	"description": "Gizmo is a lightweight TypeScript DI container for flexible and maintainable dependency management in large applications.",
 	"exports": {
-		".": "./dist/index.js"
+		".": {
+			"import": "./dist/index.js",
+			"require": "./dist/index.cjs"
+		}
 	},
-	"main": "./dist/index.js",
+	"main": "./dist/index.cjs",
 	"module": "./dist/index.js",
 	"types": "./dist/index.d.ts",
 	"files": [
@@ -18,15 +21,16 @@
 	],
 	"scripts": {
 		"dev": "vite",
-		"build": "pnpm build:ts",
+		"build": "pnpm build:cjs && pnpm build:ts",
 		"build:ts": "tsc",
+		"build:cjs": "vite build",
 		"lint": "tsc --noEmit && eslint . --fix",
 		"test": "vitest --watch",
 		"test:run": "vitest --run",
 		"test:coverage": "vitest --coverage",
 		"prepare": "husky",
 		"changelog": "changelogen",
-		"prepublishOnly": "export npm_config_registry=https://registry.npmjs.com && pnpm test:run && pnpm build:ts"
+		"prepublishOnly": "export npm_config_registry=https://registry.npmjs.com && pnpm test:run && pnpm build"
 	},
 	"devDependencies": {
 		"@antfu/eslint-config": "^2.21.1",
