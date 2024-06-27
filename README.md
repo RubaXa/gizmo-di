@@ -89,7 +89,7 @@ Set a factory for a given token and store the factory method and options.
 container.set(CONFIG_TOKEN, () => ({ debug: true }))
 
 // Transient
-container.set(HTTP_CLIENT, () => new HttpClient(), { mode: 'singleton' })
+container.set(HTTP_CLIENT, () => new HttpClient(), { mode: 'transient' })
 ```
 
 ---
