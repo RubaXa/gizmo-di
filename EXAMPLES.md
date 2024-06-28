@@ -1,19 +1,16 @@
 ### Logger
 
 ```ts
-import {
-	Gizmo,
-	LOGGER_TOKEN, // Pre-defined token
-} from 'gizmo-di'
+import { Gizmo } from 'gizmo-di'
 
 /** Project DI-container */
 const projectGizmo = new Gizmo()
 
+/** Logger token with description */
+const LOGGER_TOKEN = Gizmo.token<Console>('LoggerToken')
+
 // Setting up a token's value factory
-projectGizmo.set(LOGGER_TOKEN, () => ({
-	...console,
-	fatal: console.error,
-}))
+projectGizmo.set(LOGGER_TOKEN, () => console)
 
 // Resolve token
 const logger = projectGizmo.get(LOGGER_TOKEN)
@@ -27,7 +24,7 @@ logger.info('App ready')
 ### Inject
 
 ```ts
-import { BROWSER_STORAGES_TOKEN, Gizmo, LOGGER_TOKEN, globalGizmo } from 'gizmo-di'
+import { Gizmo, globalGizmo } from 'gizmo-di'
 
 /** Your DI-container with global-parent */
 const container = globalGizmo.sub() // or `new Gizmo()` — without parent
@@ -37,6 +34,15 @@ export const CONFIG_TOKEN = Gizmo.token(
 	'ConfigToken', // ← Token description
 	() => ({ debug: true }), // ← Default value factory
 )
+
+/** Logger token */
+export const LOGGER_TOKEN = Gizmo.token<Pick<Console, 'info'>>('LoggerToken', () => console)
+
+/** Browser Storages token */
+export const BROWSER_STORAGES_TOKEN = Gizmo.token('BrowserStorages', () => ({
+	local: localStorage,
+	session: localSession,
+}))
 
 /** HttpClient token */
 export const HTTP_CLIENT_TOKEN = Gizmo.token<HttpClient>('HttpClient') // without default
@@ -93,13 +99,10 @@ export const appGizmo = {
 	getLogger: container.set(LOGGER_TOKEN, Gizmo.provide(
 		({ debug }: InferGizmoToken<typeof CONFIG_TOKEN>) => {
 			if (!debug) {
-				return Object.fromEntries(['debug', 'info', 'warn', 'error', 'fatal'].map((key) => [
-					key,
-					() => {},
-				]))
+				return { info: () => {} }
 			}
 
-			return { ...console, fatal: console.error }
+			return console
 		}),
 	CONFIG_TOKEN,
 	),

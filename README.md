@@ -10,10 +10,11 @@ npm i --save gizmo-di
 
 ### Features
 
-- **Token-Based Dependency Resolution**: Uses tokens to identify and resolve dependencies, providing flexibility and type safety.
-- **Supports `singleton`, `scoped`, and `transient`** modes for controlling dependency lifecycles.
-- **Sub-Containers**: Allows creation of sub-containers for hierarchical dependency management.
-- **Dependency Injection**: Based on active containers.
+- 🏷️ **Token-Based Dependency Resolution**: Uses tokens to identify and resolve dependencies, providing flexibility and type safety.
+- 📦 **Sub-Containers**: Allows creation of sub-containers for hierarchical dependency management.
+- 💉 **Dependency Injection**: Based on active containers.
+- ⚙️ **Supports `singleton`, `scoped`, and `transient`** modes for controlling dependency lifecycles.
+- 🛡️ **Reliability**: Type Inference & Checking, Cyclic Dependency Detection and Error Tolerance
 
 ---
 
@@ -61,7 +62,7 @@ Provides a dependency using the active Gizmo container.
 ```ts
 const LOGGER_TOKEN = Gizmo.token('Logger', Gizmo.provide(
 	({ debug }: InferGizmoToken<typeof CONFIG_TOKEN>) => (debug
-		? console.log
+		? console.info
 		: (...args: any[]) => {}
 	),
 	CONFIG_TOKEN,
@@ -212,7 +213,7 @@ Transforms a token into a subordinate token for injectable (`Gizmo#provide`).
 
 ```ts
 container.set(LOGGER_TOKEN, Gizmo.provide(
-	(debug: boolean) => debug ? console.log : (...args: any[]) => {},
+	(debug: boolean) => debug ? console.info : (...args: any[]) => {},
 	CONFIG_TOKEN.map(({ debug }) => debug),
 ))
 ```

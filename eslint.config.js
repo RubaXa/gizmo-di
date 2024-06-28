@@ -28,9 +28,16 @@ export default antfu(
 		},
 	},
 	{
+		files: ['src/**/*.ts'],
+		rules: {
+			'no-useless-catch': 'off',
+		},
+	},
+	{
 		files: ['src/**/*.test.ts'],
 		rules: {
 			'no-console': 'off',
+			'ts/no-use-before-define': 'off',
 		},
 	},
 )

@@ -173,6 +173,25 @@ describe('container', () => {
 			expect(sub.resolve(RANDOM_TOKEN)).not.toBe(sub.resolve(RANDOM_TOKEN))
 		})
 	})
+
+	it('detect cycles', () => {
+		class Baz {
+			value = QUX_TOKEN.inject()
+		}
+
+		const root = new Gizmo()
+		const FOO_TOKEN = Gizmo.token<string>('Foo')
+		const BAR_TOKEN = Gizmo.token<string>('Bar')
+		const BAZ_TOKEN = Gizmo.token<Baz>('Baz')
+		const QUX_TOKEN = Gizmo.token<string>('Qux')
+
+		root.set(FOO_TOKEN, root.provide((val: string) => val, BAR_TOKEN))
+		root.set(BAR_TOKEN, () => root.resolve(BAZ_TOKEN).value)
+		root.set(BAZ_TOKEN, () => new Baz())
+		root.set(QUX_TOKEN, () => root.get(BAR_TOKEN))
+
+		expect(() => root.get(FOO_TOKEN)).toThrowError(`[gizmo] Cyclic dependency "Bar → Baz → Qux" detected`)
+	})
 })
 
 describe('provide', () => {

@@ -33,12 +33,15 @@ export interface GizmoToken<Type = unknown> {
 
 	/** Get token description */
 	toString: () => string
+	[Symbol.toStringTag]: string
 }
 
 /** Subordinate token */
 interface GizmoTokenSub<TOut> {
 	[GIZMO_TOKEN_OWNER]: GizmoToken<any>
 	[GIZMO_TOKEN_MAP_FN]: (thing: any, gizmo: Gizmo) => TOut
+	toString: () => string
+	[Symbol.toStringTag]: string
 }
 
 /** Token set options */
@@ -61,16 +64,61 @@ interface GizmoTokenDescriptor<Type> {
 /** Active Gizmo container for `inject` */
 let activeGizmo: Gizmo | undefined
 
+/** Set active Gizmo container */
+function inActiveGizmo<T extends Gizmo, R>(next: T, fn: () => R): R {
+	const prevGizmo = activeGizmo
+	activeGizmo = next
+
+	try {
+		return fn()
+	} catch (err) {
+		throw err
+	} finally {
+		activeGizmo = prevGizmo
+	}
+}
+
+/** Tracked dependency chain (to detect cycles) */
+const trackedGizmoDeps: GizmoToken<any>[] = []
+
+/** Tracked dependency cycles */
+function trackDeps<T extends GizmoToken<any>, R>(token: T, fn: () => R): R {
+	const tracking = !trackedGizmoDeps.length
+	const idx = trackedGizmoDeps.indexOf(token)
+
+	if (idx > -1) {
+		const deps = trackedGizmoDeps.slice(idx).join(' → ')
+		trackedGizmoDeps.length = 0
+		throw new Error(`[gizmo] Cyclic dependency "${deps}" detected`)
+	}
+
+	trackedGizmoDeps.push(token)
+
+	try {
+		return fn()
+	} catch (error) {
+		throw error
+	} finally {
+		if (tracking) {
+			trackedGizmoDeps.length = 0
+		}
+	}
+}
+
 /** Gizmo (DI container) */
 export class Gizmo {
 	/** Create a token */
-	static token<Type>(description?: string, factory?: () => Type): GizmoToken<Type> {
+	static token<Type>(description = 'unknown', factory?: () => Type): GizmoToken<Type> {
 		const owner: GizmoToken<Type> = {
 			[GIZMO_TOKEN_TYPE]: factory && memo(factory),
 
-			toString: () => description || 'unknown',
+			toString: () => description,
+			[Symbol.toStringTag]: description,
 
 			map: (fn) => ({
+				toString: () => `map(${description})`,
+				[Symbol.toStringTag]: `map(${description})`,
+
 				[GIZMO_TOKEN_OWNER]: owner,
 				[GIZMO_TOKEN_MAP_FN]: fn as any,
 			}),
@@ -96,16 +144,8 @@ export class Gizmo {
 
 		return function <Instance, Args extends any[]>(Constructor: { new (...args: Args): Instance }) {
 			const newConstructor: any = function (...args: Args) {
-				const prevGizmo = activeGizmo
-
 				injectedGizmo ||= activeGizmo
-				activeGizmo = injectedGizmo
-
-				const instance = new Constructor(...args)
-
-				activeGizmo = prevGizmo
-
-				return instance
+				return inActiveGizmo(injectedGizmo!, () => new Constructor(...args))
 			}
 
 			newConstructor.prototype = Constructor.prototype
@@ -158,32 +198,21 @@ export class Gizmo {
 	set<Type>(token: GizmoToken<Type>, factory: () => Type, options: GizmoSetOptions<Type> = {}) {
 		this.descriptors.set(token, {
 			options,
-			factory: (ownGizmo) => {
-				const prevGizmo = activeGizmo
-				activeGizmo = ownGizmo
-
+			factory: (ownGizmo) => inActiveGizmo(ownGizmo, () => {
 				let value = factory()
 
 				// TODO: Привести в порядок и сделать wrap
 				if (typeof value === 'function') {
 					const original = value
 
-					value = ((...args: any[]) => {
-						const prevGizmo = activeGizmo
-						activeGizmo = ownGizmo
-
-						const result = original(...args)
-
-						activeGizmo = prevGizmo
-
-						return result
-					}) as Type
+					value = ((...args: any[]) => inActiveGizmo(
+						ownGizmo,
+						() => original(...args),
+					)) as Type
 				}
 
-				activeGizmo = prevGizmo
-
 				return value
-			},
+			}),
 		})
 
 		return () => this.resolve(token)
@@ -219,13 +248,15 @@ export class Gizmo {
 			}
 
 			if (mode === 'transient' || mode === 'scoped') {
-				const value = descriptor?.factory(this)
+				return trackDeps(token, () => {
+					const value = descriptor?.factory(this)
 
-				if (mode === 'scoped') {
-					this.values.set(token, value)
-				}
+					if (mode === 'scoped') {
+						this.values.set(token, value)
+					}
 
-				return value
+					return value
+				})
 			}
 
 			if (nextDescriptor && (!nextMode || nextMode === 'singleton')) {
@@ -240,14 +271,16 @@ export class Gizmo {
 				return ownerContainer.values.get(token)
 			}
 
-			const value = descriptor.factory(ownerContainer)
-			ownerContainer.values.set(token, value)
+			return trackDeps(token, () => {
+				const value = descriptor.factory(ownerContainer)
+				ownerContainer.values.set(token, value)
 
-			return value
+				return value
+			})
 		}
 
 		// Try to return the default value
-		return token[GIZMO_TOKEN_TYPE]?.()
+		return trackDeps(token, () => token[GIZMO_TOKEN_TYPE]?.())
 	}
 
 	/** Get the value by token (throws an error if absent) */
