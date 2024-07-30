@@ -51,8 +51,9 @@ export type InferGizmoToken<T> = T extends GizmoToken<infer Type> ? Type : never
 export type GizmoTokenMode = 'singleton' | 'scoped' | 'transient'
 
 /** Опции установки токена */
-interface GizmoSetOptions<_Type> {
+interface GizmoSetOptions<Type> {
 	mode?: GizmoTokenMode
+	onCreated?: (value: Type) => void
 }
 
 /** Token descriptor */
@@ -255,6 +256,8 @@ export class Gizmo {
 						this.values.set(token, value)
 					}
 
+					descriptor?.options.onCreated?.(value)
+
 					return value
 				})
 			}
@@ -273,7 +276,9 @@ export class Gizmo {
 
 			return trackDeps(token, () => {
 				const value = descriptor.factory(ownerContainer)
+
 				ownerContainer.values.set(token, value)
+				descriptor.options.onCreated?.(value)
 
 				return value
 			})
@@ -285,7 +290,7 @@ export class Gizmo {
 
 	/** Get the value by token (throws an error if absent) */
 	resolve<Type>(token: GizmoToken<Type>): Type {
-		if (!this.descriptors.has(token) && !this.parent?.resolve(token) && !token[GIZMO_TOKEN_TYPE]) {
+		if (!this.descriptors.has(token) && !this.parent?.has(token) && !token[GIZMO_TOKEN_TYPE]) {
 			throw new Error(`[gizmo] Resolve "${token}" token failed`)
 		}
 

@@ -1,4 +1,4 @@
-import { beforeEach, describe, expect, it } from 'vitest'
+import { beforeEach, describe, expect, it, vitest } from 'vitest'
 
 import { Gizmo, type GizmoToken, globalGizmo } from './gizmo'
 
@@ -78,14 +78,20 @@ describe('container', () => {
 				const root = new Gizmo()
 				const sub = root.sub()
 				const RANDOM_TOKEN = Gizmo.token<number>()
+				const onCreated = vitest.fn()
 
-				root.set(RANDOM_TOKEN, () => Math.random())
+				root.set(RANDOM_TOKEN, () => Math.random(), {
+					onCreated,
+				})
 
 				expect(root.has(RANDOM_TOKEN)).toBeTruthy()
 				expect(sub.has(RANDOM_TOKEN)).toBeTruthy()
 
 				expect(sub.resolve(RANDOM_TOKEN)).toBeGreaterThanOrEqual(0)
 				expect(root.resolve(RANDOM_TOKEN)).toBe(sub.resolve(RANDOM_TOKEN))
+
+				expect(onCreated).toHaveBeenCalledTimes(1)
+				expect(onCreated).toHaveBeenCalledWith(sub.get(RANDOM_TOKEN))
 			})
 
 			it('root -> sub (singleton)', () => {
@@ -114,13 +120,18 @@ describe('container', () => {
 			it('root (scoped) -> sub', () => {
 				const root = new Gizmo()
 				const sub = root.sub()
-				const RANDOM_TOKEN = Gizmo.token<number>()
+				const RANDOM_TOKEN = Gizmo.token<number>('RAND')
+				const onCreated = vitest.fn()
 
-				root.set(RANDOM_TOKEN, () => Math.random(), { mode: 'scoped' })
+				root.set(RANDOM_TOKEN, () => Math.random(), { mode: 'scoped', onCreated })
 
 				expect(sub.resolve(RANDOM_TOKEN)).toBe(sub.resolve(RANDOM_TOKEN))
 				expect(root.resolve(RANDOM_TOKEN)).toBe(root.resolve(RANDOM_TOKEN))
 				expect(root.resolve(RANDOM_TOKEN)).not.toBe(sub.resolve(RANDOM_TOKEN))
+
+				expect(onCreated).toHaveBeenCalledTimes(2)
+				expect(onCreated).toHaveBeenNthCalledWith(1, sub.get(RANDOM_TOKEN))
+				expect(onCreated).toHaveBeenNthCalledWith(2, root.get(RANDOM_TOKEN))
 			})
 
 			it('root (singleton) -> sub (scoped)', () => {
