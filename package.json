@@ -1,7 +1,7 @@
 {
 	"name": "gizmo-di",
 	"type": "module",
-	"version": "0.4.0",
+	"version": "0.5.0",
 	"description": "Gizmo is a lightweight TypeScript DI container for flexible and maintainable dependency management in large applications.",
 	"exports": {
 		".": {
