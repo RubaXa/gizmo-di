@@ -14,6 +14,8 @@ npm i --save gizmo-di
 - 📦 **Sub-Containers**: Allows creation of sub-containers for hierarchical dependency management.
 - 💉 **Dependency Injection**: Based on active containers.
 - ⚙️ **Supports `singleton`, `scoped`, and `transient`** modes for controlling dependency lifecycles.
+- 🔄 **Lifecycle Hooks**: `onCreated` and `onDeleted` for managing dependency lifecycle events.
+- ⏳ **Lazy Loading**: Asynchronously loads dependencies to enhance performance by created modules only when they are required.
 - 🛡️ **Reliability**: Type Inference & Checking, Cyclic Dependency Detection and Error Tolerance
 
 ---
@@ -71,6 +73,25 @@ const LOGGER_TOKEN = Gizmo.token('Logger', Gizmo.provide(
 
 ---
 
+#### `Gizmo.lazy<Type>(factory)`
+
+Creates a lazy-loaded factory for a token.
+
+**Parameters**:
+- **factory**: `() => Promise<Type> | Promise<Type>` — A function or promise that resolves to the token's value.
+
+**Returns**: A function that returns a promise resolving to the token's value.
+
+```ts
+// on demand
+globalGizmo.set(LAZY_MODULE_TOKEN, Gizmo.lazy(() => import('@some/module')))
+
+// and promise
+globalGizmo.set(PROMISE_TOKEN, Gizmo.lazy(import('@some/module')))
+```
+
+---
+
 ### `Gizmo` instance methods
 
 #### `set<Type>(token, factory, [options])`
@@ -82,12 +103,16 @@ Set a factory for a given token and store the factory method and options.
 - **factory**: `() => Type` — the factory function to create the token's value.
 - **options**: `GizmoSetOptions<Type>` (optional)
   - **mode**: `singleton | scoped | transient` (optional).
+  - **onCreated**: `(value: Type) => void` (optional) — a hook called when a token's value is created.
+  - **onDeleted**: `(value: Type) => void` (optional) — a hook called when a token's value is deleted.
 
 **Returns**: `() => Type` — function to resolve the token.
 
 ```ts
 // Singleton
-container.set(CONFIG_TOKEN, () => ({ debug: true }))
+container.set(CONFIG_TOKEN, () => ({ debug: true }), {
+	onCreated: (config) => console.log('Config created:', config),
+})
 
 // Transient
 container.set(HTTP_CLIENT, () => new HttpClient(), { mode: 'transient' })

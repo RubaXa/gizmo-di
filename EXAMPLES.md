@@ -10,7 +10,9 @@ const projectGizmo = new Gizmo()
 const LOGGER_TOKEN = Gizmo.token<Console>('LoggerToken')
 
 // Setting up a token's value factory
-projectGizmo.set(LOGGER_TOKEN, () => console)
+projectGizmo.set(LOGGER_TOKEN, () => console, {
+	onCreated: (logger) => logger.info(`Logger created`),
+})
 
 // Resolve token
 const logger = projectGizmo.get(LOGGER_TOKEN)

@@ -54,6 +54,7 @@ export type GizmoTokenMode = 'singleton' | 'scoped' | 'transient'
 interface GizmoSetOptions<Type> {
 	mode?: GizmoTokenMode
 	onCreated?: (value: Type) => void
+	onDeleted?: (value: Type) => void
 }
 
 /** Token descriptor */
@@ -180,8 +181,27 @@ export class Gizmo {
 		}
 	}
 
+	/** Create lazy token factory */
+	static lazy<Type>(
+		factory: (() => Promise<Type>) | Promise<Type>,
+	): () => Promise<Type extends { default: any } ? Type['default'] : Type> {
+		const normFactory = typeof factory === 'function'
+			? factory
+			: () => factory
+
+		// @ts-expect-error: generic vs. extends
+		return () => normFactory().then((exports) =>
+			exports && typeof exports === 'object' && 'default' in exports
+				? exports.default
+				: exports,
+		)
+	}
+
 	/** Cached token values */
-	private values = new Map<GizmoToken<any>, any>()
+	private values = new Map<GizmoToken<any>, {
+		data: any
+		dispose: () => void
+	}>()
 
 	/** Token descriptors (factory and options) */
 	private descriptors = new Map<GizmoToken<any>, GizmoTokenDescriptor<any>>()
@@ -189,6 +209,7 @@ export class Gizmo {
 	/** LEGO */
 	constructor(private parent?: Gizmo) {}
 
+	lazy = Gizmo.lazy
 	token = Gizmo.token
 	provide = Gizmo.provide
 
@@ -227,7 +248,7 @@ export class Gizmo {
 	/** Get the value by token */
 	get<Type>(token: GizmoToken<Type>): Type | undefined {
 		if (this.values.has(token)) {
-			return this.values.get(token)
+			return this.values.get(token)?.data
 		}
 
 		// Find the first non-`singleton` descriptor
@@ -253,7 +274,10 @@ export class Gizmo {
 					const value = descriptor?.factory(this)
 
 					if (mode === 'scoped') {
-						this.values.set(token, value)
+						this.values.set(token, {
+							data: value,
+							dispose: () => descriptor?.options.onDeleted?.(value),
+						})
 					}
 
 					descriptor?.options.onCreated?.(value)
@@ -271,13 +295,17 @@ export class Gizmo {
 		// Found a parent token descriptor
 		if (descriptor) {
 			if (ownerContainer.values.has(token)) {
-				return ownerContainer.values.get(token)
+				return ownerContainer.values.get(token)?.data
 			}
 
 			return trackDeps(token, () => {
 				const value = descriptor.factory(ownerContainer)
 
-				ownerContainer.values.set(token, value)
+				ownerContainer.values.set(token, {
+					data: value,
+					dispose: () => descriptor.options.onDeleted?.(value),
+				})
+
 				descriptor.options.onCreated?.(value)
 
 				return value
@@ -299,12 +327,14 @@ export class Gizmo {
 
 	/** Delete a token from the container */
 	delete<Type>(token: GizmoToken<Type>): void {
+		this.values.get(token)?.dispose()
 		this.values.delete(token)
 		this.descriptors.delete(token)
 	}
 
 	/** Clear the container */
 	clear(): void {
+		this.values.forEach(({ dispose }) => dispose())
 		this.values.clear()
 		this.descriptors.clear()
 	}

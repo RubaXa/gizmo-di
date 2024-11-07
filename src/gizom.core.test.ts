@@ -28,6 +28,34 @@ describe('token', () => {
 })
 
 describe('container', () => {
+	describe('lazy', () => {
+		it('promise', async () => {
+			const TOKEN = Gizmo.token('LAZY_PROMISE_TOKEN')
+			gizmoTest.set(TOKEN, Gizmo.lazy(Promise.resolve('lazy-promise')))
+			expect(await gizmoTest.get(TOKEN)).toBe('lazy-promise')
+		})
+
+		it('promise with default', async () => {
+			const TOKEN = Gizmo.token('LAZY_PROMISE_WITH_DEFAULT_TOKEN')
+			gizmoTest.set(TOKEN, Gizmo.lazy(Promise.resolve({ default: 'lazy-promise-with-default' })))
+			expect(await gizmoTest.get(TOKEN)).toBe('lazy-promise-with-default')
+		})
+
+		describe('factory', () => {
+			it('promise', async () => {
+				const TOKEN = Gizmo.token('LAZY_FACTORY_PROMISE_TOKEN')
+				gizmoTest.set(TOKEN, Gizmo.lazy(() => Promise.resolve('lazy-factory-promise')))
+				expect(await gizmoTest.get(TOKEN)).toBe('lazy-factory-promise')
+			})
+
+			it('promise with default', async () => {
+				const TOKEN = Gizmo.token('LAZY_FACTORY_PROMISE_WITH_DEFAULT_TOKEN')
+				gizmoTest.set(TOKEN, Gizmo.lazy(() => Promise.resolve({ default: 'lazy-factory-promise-with-default' })))
+				expect(await gizmoTest.get(TOKEN)).toBe('lazy-factory-promise-with-default')
+			})
+		})
+	})
+
 	it('delete', () => {
 		expect(gizmoTest.has(TEST_TOKEN)).toBeFalsy()
 
