@@ -232,7 +232,7 @@ container.set(HTTP_CLIENT_TOKEN, () => new HttpClient())
 Transforms a token into a subordinate token for injectable (`Gizmo#provide`).
 
 **Parameters**
-- **fn**: `fn: (value: Type) => TOut` — A function that defines the transformation
+- **fn**: `(value: Type, gizmo: Gizmo) => TOut` — A function that defines the transformation. It receives the resolved value of the parent token and the current Gizmo instance.
 
 **Returns**: `GizmoTokenSub<TOut>` — Subordinate token type
 

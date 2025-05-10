@@ -43,7 +43,7 @@ export const LOGGER_TOKEN = Gizmo.token<Pick<Console, 'info'>>('LoggerToken', ()
 /** Browser Storages token */
 export const BROWSER_STORAGES_TOKEN = Gizmo.token('BrowserStorages', () => ({
 	local: localStorage,
-	session: localSession,
+	session: sessionStorage,
 }))
 
 /** HttpClient token */
