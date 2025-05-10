@@ -268,7 +268,7 @@ const RANDOM_TOKEN = Gizmo.token<{ value: number }>('random')
 const first = new Gizmo()
 const second = first.sub()
 const third = second.sub()
-const four = four.sub()
+const four = third.sub()
 
 // Singleton
 first.set(RANDOM_TOKEN, randomValue)
