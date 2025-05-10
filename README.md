@@ -15,7 +15,7 @@ npm i --save gizmo-di
 - 💉 **Dependency Injection**: Based on active containers.
 - ⚙️ **Supports `singleton`, `scoped`, and `transient`** modes for controlling dependency lifecycles.
 - 🔄 **Lifecycle Hooks**: `onCreated` and `onDeleted` for managing dependency lifecycle events.
-- ⏳ **Lazy Loading**: Asynchronously loads dependencies to enhance performance by created modules only when they are required.
+- ✨ **Lazy**: Asynchronously loads dependencies to enhance performance by created modules only when they are required.
 - 🛡️ **Reliability**: Type Inference & Checking, Cyclic Dependency Detection and Error Tolerance
 
 ---
@@ -86,7 +86,7 @@ Creates a lazy-loaded factory for a token.
 // on demand
 globalGizmo.set(LAZY_MODULE_TOKEN, Gizmo.lazy(() => import('@some/module')))
 
-// and promise
+// and promise based
 globalGizmo.set(PROMISE_TOKEN, Gizmo.lazy(import('@some/module')))
 ```
 
