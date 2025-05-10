@@ -50,7 +50,7 @@ export type InferGizmoToken<T> = T extends GizmoToken<infer Type> ? Type : never
 /** Token mode */
 export type GizmoTokenMode = 'singleton' | 'scoped' | 'transient'
 
-/** Опции установки токена */
+/** Token set options */
 interface GizmoSetOptions<Type> {
 	mode?: GizmoTokenMode
 	onCreated?: (value: Type) => void
@@ -223,7 +223,7 @@ export class Gizmo {
 			factory: (ownGizmo) => inActiveGizmo(ownGizmo, () => {
 				let value = factory()
 
-				// TODO: Привести в порядок и сделать wrap
+				// TODO: Refactor and make a wrap
 				if (typeof value === 'function') {
 					const original = value
 

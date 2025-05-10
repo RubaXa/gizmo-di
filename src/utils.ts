@@ -1,4 +1,4 @@
-/** Проверка на класс (ну такое) */
+/** Checks if a value is class-like. */
 export function isClassLike(value: any): value is { new (...args: any): any } {
 	return (
 		typeof value === 'function'
@@ -7,7 +7,7 @@ export function isClassLike(value: any): value is { new (...args: any): any } {
 	)
 }
 
-/** Мемоизация вызова функции */
+/** Memoizes a function call. */
 export function memo<T>(fn: () => T): (() => T) {
 	let ready = false
 	let value: T
