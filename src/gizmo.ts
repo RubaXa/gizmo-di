@@ -1,4 +1,5 @@
 import { isClassLike, memo } from './utils'
+import type { GizmoLazy } from './gizmo.lazy'
 
 type ArrayToTokens<TList extends any[]> = {
 	[Idx in keyof TList]: GizmoToken<TList[Idx]> | GizmoTokenSub<TList[Idx]>;
@@ -10,10 +11,10 @@ type DepTokenArgs<T> = T extends { new (...args: infer CArgs): any }
 		? ArrayToTokens<FArgs>
 		: never
 
-type DepType<T> = T extends { new (...args: any[]): infer CType }
-	? CType
-	: T extends (...args: any[]) => infer FType
-		? FType
+type DepType<T> = T extends { new (...args: any[]): infer ClassType }
+	? ClassType
+	: T extends (...args: any[]) => infer RetType
+		? RetType
 		: never
 
 const GIZMO_TOKEN_TYPE = Symbol('gizmo.token.type')
@@ -35,6 +36,13 @@ export interface GizmoToken<Type = unknown> {
 	toString: () => string
 	[Symbol.toStringTag]: string
 }
+
+type LazyValue = Record<string, unknown>
+type LazyModule<Type extends LazyValue> = Type extends { default: infer D } ? D : Type
+type LazyModuleFactory<Type extends LazyValue> = (() => Promise<Type>) | Promise<Type>
+
+/** Token specifically for a GizmoLazy facade */
+export type GizmoLazyToken<Type extends LazyValue> = GizmoToken<GizmoLazy<LazyModule<Type>>>
 
 /** Subordinate token */
 interface GizmoTokenSub<TOut> {
@@ -137,6 +145,30 @@ export class Gizmo {
 		return owner
 	}
 
+	/** Creates a token specifically typed for a `GizmoLazy<T>` facade. */
+	static tokenLazy<Type extends LazyValue>(description?: string): GizmoLazyToken<Type> {
+		return Gizmo.token<GizmoLazy<Type>>(description) as GizmoLazyToken<Type>
+	}
+
+	/** Create lazy token factory */
+	static lazy<Type extends LazyValue>(factory: LazyModuleFactory<Type>): () => GizmoLazy<LazyModule<Type>> {
+	// static lazy<Type>(
+	// 	factory: (() => Promise<Type>) | Promise<Type>,
+	// ): () => Promise<Type extends { default: any } ? Type['default'] : Type> {
+		const module = typeof factory === 'function'
+			? factory
+			: () => factory
+
+		const normFactory = () => module().then((exports) =>
+			exports && typeof exports === 'object' && 'default' in exports
+				? exports.default
+				: exports,
+		)
+
+		// @ts-expect-error: generics is hurt
+		return normFactory
+	}
+
 	/**
 	 * Decorator to ensure proper `GizmoToken.inject` functionality inside classes.
 	 * IMPORTANT: This is a very fragile implementation, working only for classes created within `Gizmo.provide`
@@ -179,22 +211,6 @@ export class Gizmo {
 
 			return dep(...args.map(resolver))
 		}
-	}
-
-	/** Create lazy token factory */
-	static lazy<Type>(
-		factory: (() => Promise<Type>) | Promise<Type>,
-	): () => Promise<Type extends { default: any } ? Type['default'] : Type> {
-		const normFactory = typeof factory === 'function'
-			? factory
-			: () => factory
-
-		// @ts-expect-error: generic vs. extends
-		return () => normFactory().then((exports) =>
-			exports && typeof exports === 'object' && 'default' in exports
-				? exports.default
-				: exports,
-		)
 	}
 
 	/** Cached token values */

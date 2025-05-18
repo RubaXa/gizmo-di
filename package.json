@@ -2,9 +2,9 @@
 	"name": "gizmo-di",
 	"type": "module",
 	"version": "0.5.1",
-	"homepage": "https://github.com/RubaXa/gizmo-di",
 	"description": "Gizmo is a lightweight TypeScript DI container for flexible and maintainable dependency management in large applications.",
 	"license": "MIT",
+	"homepage": "https://github.com/RubaXa/gizmo-di",
 	"keywords": [
 		"di",
 		"dependency",
